@@ -1,0 +1,57 @@
+const HttpStatus = {
+  OK: 200,
+  CREATED: 201,
+  ACCEPTED: 202,
+  NO_CONTENT: 204,
+
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  PAYMENT_REQUIRED: 402,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  METHOD_NOT_ALLOWED: 405,
+  REQUEST_TIMEOUT: 408,
+  CONFLICT: 409,
+  PRECONDITION_FAILED: 412,
+  UNPROCESSABLE_ENTITY: 422,
+  TOO_MANY_REQUESTS: 429,
+
+  /**
+   * Custom client status codes
+   */
+
+  TOO_MANY_VERIFICATIONS: 450,
+  INVALID_VERIFICATION_CODE: 451,
+
+  INTERNAL_SERVER_ERROR: 500,
+  BAD_GATEWAY: 502,
+  SERVICE_UNAVAILABLE: 503,
+
+  /**
+   * Custom server status codes
+   */
+
+  CAN_NOT_SEND_CODE: 530,
+  PIN_IS_EMPTY_IN_RESPONSE: 531,
+  SHEET_LIST_NOT_FOUND: 532,
+  SHEET_ROW_NOT_FOUND: 533,
+};
+
+const MAX_VERIFICATIONS_PER_DAY = 5;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+const GOOGLE_SHEET_LIST_KEYS = [
+  "id",
+  "name",
+  "phoneNumber",
+  "email",
+  "confirmed",
+  "date",
+];
+
+module.exports = {
+  HttpStatus,
+  MAX_VERIFICATIONS_PER_DAY,
+  DAY_IN_MS,
+  GOOGLE_SHEET_LIST_KEYS,
+};
