@@ -19,7 +19,7 @@ const getLastDayVerifications = () =>
   db("verifications").where(
     "createdAt",
     ">=",
-    formatDate(new Date() - DAY_IN_MS)
+    formatDate(new Date(Date.now() - DAY_IN_MS))
   );
 
 const getAllVerifications = () => db("verifications").select("*");

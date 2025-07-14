@@ -1,4 +1,5 @@
 const TelegramBot = require("node-telegram-bot-api");
+const cron = require("node-cron");
 
 const { TELEGRAM_BOT_ADMINS, TELEGRAM_BOT_TOKEN } = require("../environments");
 const {
@@ -9,10 +10,10 @@ const {
 } = require("./consts");
 const {
   getAllStatsText,
-  getSheetListsText,
   getProductsControlKeyboards,
+  sendDailyEventsStat,
 } = require("./handlers");
-const { productsDao } = require("../Dao");
+const { productService } = require("../Services");
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
@@ -58,14 +59,6 @@ bot.on("message", async (msg) => {
       });
 
       break;
-    case BUTTONS.googleSheets:
-      const sheetListsText = await getSheetListsText();
-
-      await bot.sendMessage(chatId, sheetListsText, {
-        parse_mode: "Markdown",
-        disable_web_page_preview: true,
-      });
-      break;
   }
 });
 
@@ -90,7 +83,7 @@ bot.on("callback_query", async (callbackQuery) => {
     const [_, action, id] = fraudMatch;
     const isActivated = action === "on";
 
-    await productsDao.setProductActivation(id, isActivated);
+    await productService.setActive({ productId: id, value: isActivated });
 
     const keyboards = await getProductsControlKeyboards();
 
@@ -101,6 +94,16 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 
   bot.answerCallbackQuery(callbackQuery.id);
+});
+
+cron.schedule("0 16 * * *", async () => {
+  const adminsId = TELEGRAM_BOT_ADMINS.split(",");
+
+  const text = await sendDailyEventsStat();
+
+  adminsId.forEach((id) => {
+    bot.sendMessage(Number(id), text, { parse_mode: "HTML" });
+  });
 });
 
 const startBot = () => {

@@ -45,17 +45,16 @@ const sendCode = async ({ phoneNumber, productId }) => {
     }
   );
 
-  const {
-    data: { pin },
-    success,
-  } = sendCodeResponse.data;
+  const {data, success, message} = sendCodeResponse.data;
 
   if (!success) {
     throw new ThrowError(
       HttpStatus.CAN_NOT_SEND_CODE,
-      `Can not send code to ${phoneNumber}`
+      `Can not send code to ${phoneNumber} ${message}`
     );
   }
+
+  const {pin} = data;
 
   if (!pin) {
     throw new ThrowError(

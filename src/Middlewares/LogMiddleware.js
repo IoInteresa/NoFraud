@@ -11,7 +11,7 @@ const LogMiddleware = (req, res, next) => {
       statusCode: res.statusCode,
       ip: req.ip,
       headers: req.headers,
-      body: req.body,
+      body: req.body || {},
       responseTime: Date.now() - start,
     };
 

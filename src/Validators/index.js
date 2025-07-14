@@ -11,21 +11,26 @@ const checkCodeValidator = z.object({
   productId: z.number(),
 });
 
-const addToSheetValidator = z.object({
+const addLeadValidator = z.object({
   phoneNumber: z.string().regex(/^[0-9]{10,15}$/),
-  name: z.string(),
-  email: z.string(),
+  name: z.string().optional(),
+  email: z.string().optional(),
   productId: z.number(),
 });
 
-const sheetConfirmValidator = z.object({
+const leadConfirmValidator = z.object({
   id: z.string(),
+  productId: z.number(),
+});
+
+const getStatusValidator = z.object({
   productId: z.number(),
 });
 
 module.exports = {
   sendCodeValidator,
   checkCodeValidator,
-  addToSheetValidator,
-  sheetConfirmValidator,
+  addLeadValidator,
+  leadConfirmValidator,
+  getStatusValidator
 };

@@ -1,12 +1,4 @@
-const { GoogleSpreadsheet } = require("google-spreadsheet");
-const { JWT } = require("google-auth-library");
-
 const { verificationDao, productsDao } = require("../Dao");
-const {
-  GOOGLE_SHEET_ID,
-  GOOGLE_SHEET_PRIVATE_KEY,
-  GOOGLE_SHEET_EMAIL,
-} = require("../environments");
 
 const getAllStatsText = async () => {
   const verifications = await verificationDao.getAllVerifications();
@@ -21,29 +13,6 @@ const getAllStatsText = async () => {
 Количество уникальных номеров телефонов: ${uniquePhones}`;
 };
 
-const getSheetListsText = async () => {
-  const formattedPrivateKey = GOOGLE_SHEET_PRIVATE_KEY.replace(/\\n/g, "\n");
-
-  const authClient = new JWT({
-    email: GOOGLE_SHEET_EMAIL,
-    key: formattedPrivateKey,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  const doc = new GoogleSpreadsheet(GOOGLE_SHEET_ID, authClient);
-  await doc.loadInfo();
-
-  let sheetsListMessage = "";
-
-  doc.sheetsByIndex.forEach((sheet) => {
-    const sheetUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}#gid=${sheet.sheetId}`;
-
-    sheetsListMessage += `Название листа: ${sheet.title} - [ссылка](${sheetUrl})\n`;
-  });
-
-  return sheetsListMessage;
-};
-
 const getProductsControlKeyboards = async () => {
   const products = await productsDao.getAllProducts();
 
@@ -55,8 +24,59 @@ const getProductsControlKeyboards = async () => {
   ]);
 };
 
+const sendDailyEventsStat = async () => {
+  const [lastDayVerifications, allProducts] = await Promise.all([
+    verificationDao.getLastDayVerifications(),
+    productsDao.getAllProducts(),
+  ]);
+
+  const productMap = new Map(
+    allProducts.map((product) => [product.id, product])
+  );
+
+  const verificationsByProduct = lastDayVerifications.reduce(
+    (groups, verification) => {
+      const { productId } = verification;
+
+      if (!groups.has(productId)) {
+        groups.set(productId, []);
+      }
+
+      groups.get(productId).push(verification);
+
+      return groups;
+    },
+    new Map()
+  );
+
+  const statsMessages = Array.from(verificationsByProduct.entries())
+    .map(([productId, verifications]) => {
+      const product = productMap.get(Number(productId));
+
+      const totalRequests = verifications.length;
+      const successfulVerifications = verifications.filter(
+        (v) => v.isVerified
+      ).length;
+      const uniquePhones = new Set(verifications.map((v) => v.phoneNumber))
+        .size;
+
+      return [
+        `Продукт: ${product.name}\n`,
+        "----------------------------",
+        `Количество запросов на верификацию: ${totalRequests}`,
+        `Количество успешных верификаций: ${successfulVerifications}`,
+        `Количество уникальных номеров: ${uniquePhones}`,
+        "----------------------------",
+        "",
+      ].join("\n");
+    })
+    .filter(Boolean);
+
+  return statsMessages.join("\n");
+};
+
 module.exports = {
   getAllStatsText,
-  getSheetListsText,
   getProductsControlKeyboards,
+  sendDailyEventsStat,
 };

@@ -1,7 +1,9 @@
 const verificationController = require("./VerificationController");
-const googleSheetController = require("./GoogleSheetController");
+const leadController = require("./LeadController");
+const productController = require("./ProductController");
 
 module.exports = {
   verificationController,
-  googleSheetController,
+  leadController,
+  productController,
 };

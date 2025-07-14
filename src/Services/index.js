@@ -1,7 +1,9 @@
 const verificationService = require("./VerificationService");
-const googleSheetService = require("./GoogleSheetService");
+const leadService = require("./LeadService");
+const productService = require("./ProductService");
 
 module.exports = {
   verificationService,
-  googleSheetService,
+  leadService,
+  productService
 };
